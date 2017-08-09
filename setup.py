@@ -13,10 +13,11 @@ setup(name='cloudtools',
 	      'Programming Language :: Python :: 2.7'
 	  ],
 	  keywords='google cloud dataproc spark jupyter hail',
-	  packages=['cloudtools'],
+	  packages=['cluster', 'compute'],
 	  entry_points={
 	      'console_scripts': [
-	          'cluster = cloudtools.__main__:main'
+	          'cluster = cluster.__main__:main',
+	          'compute = compute.__main__:main'
 	      ]
 	  },
 	  )

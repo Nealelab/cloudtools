@@ -26,6 +26,9 @@ def main():
     stop_parser = subs.add_parser('stop',
                                   help='Shut down a Dataproc cluster.',
                                   description='Shut down a Dataproc cluster.')
+    compute_create_parser = subs.add_parser('compute-create',
+                                            help='Create a Compute Engine instance.',
+                                            description='Create a Compute Engine instance.')
 
     start_parser.set_defaults(module='start')
     start.init_parser(start_parser)
