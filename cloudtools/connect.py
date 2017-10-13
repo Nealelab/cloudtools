@@ -6,10 +6,12 @@ def init_parser(parser):
     parser.add_argument('name', type=str, help='Cluster name.')
     parser.add_argument('service', type=str,
                         choices=['notebook', 'nb', 'spark-ui', 'ui', 'spark-ui1', 'ui1',
-                                 'spark-ui2', 'ui2', 'spark-history', 'hist'],
-                        help='Web service to launch.')
+                                 'spark-ui2', 'ui2', 'spark-history', 'hist', 'elk', 'elk-history'],
+                        help='Web service to launch.', nargs='+')
     parser.add_argument('--port', '-p', default='10000', type=str,
                         help='Local port to use for SSH tunnel to master node (default: %(default)s).')
+    parser.add_argument('--elk-port', default='10001', type=str,
+                        help='Local port to use for SSH tunnel to elk node (default: %(default)s).')
     parser.add_argument('--zone', '-z', default='us-central1-b', type=str,
                         help='Compute zone for Dataproc cluster (default: %(default)s).')
 
@@ -21,13 +23,9 @@ def main(args):
         'ui': 'spark-ui',
         'ui1': 'spark-ui1',
         'ui2': 'spark-ui2',
-        'hist': 'history',
+        'hist': 'spark-history',
         'nb': 'notebook'
     }
-
-    service = args.service
-    if service in shortcut:
-        service = shortcut[service]
 
     # Dataproc port mapping
     dataproc_ports = {
@@ -35,32 +33,41 @@ def main(args):
         'spark-ui1': 4041,
         'spark-ui2': 4042,
         'spark-history': 18080,
-        'notebook': 8123
+        'notebook': 8123,
+        'elk': 5601,
+        'elk-history': 18080
     }
-    connect_port = dataproc_ports[service]
 
-    # open SSH tunnel to master node
-    cmd = [
-        'gcloud',
-        'compute',
-        'ssh',
-        '{}-m'.format(args.name),
-        '--zone={}'.format(args.zone),
-        '--ssh-flag=-D {}'.format(args.port),
-        '--ssh-flag=-N',
-        '--ssh-flag=-f',
-        '--ssh-flag=-n'
-    ]
-    with open(os.devnull, 'w') as f:
-        check_call(cmd, stdout=f, stderr=f)
+    def is_elk(s):
+        return s == 'elk' or s == 'elk-history'
 
-    # open Chrome with SOCKS proxy configuration
-    cmd = [
-        r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-        'http://localhost:{}'.format(connect_port),
-        '--proxy-server=socks5://localhost:{}'.format(args.port),
-        '--host-resolver-rules=MAP * 0.0.0.0 , EXCLUDE localhost',
-        '--user-data-dir=/tmp/'
-    ]
-    with open(os.devnull, 'w') as f:
-        Popen(cmd, stdout=f, stderr=f)
+    service = [shortcut.get(s, s) for s in args.service]
+    inputs = [('{}-elk'.format(args.name), args.elk_port, dataproc_ports[s]) if is_elk(s) else ('{}-m'.format(args.name), args.port, dataproc_ports[s]) for s in service]
+
+    for name, localport, remoteport in inputs:
+        # open SSH tunnel
+        cmd = [
+            'gcloud',
+            'compute',
+            'ssh',
+            '{}'.format(name),
+            '--zone={}'.format(args.zone),
+            '--ssh-flag=-D {}'.format(localport),
+            '--ssh-flag=-N',
+            '--ssh-flag=-f',
+            '--ssh-flag=-n'
+        ]
+
+        with open(os.devnull, 'w') as f:
+            check_call(cmd, stdout=f, stderr=f)
+
+        # open Chrome with SOCKS proxy configuration
+        cmd = [
+            r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            'http://localhost:{}'.format(remoteport),
+            '--proxy-server=socks5://localhost:{}'.format(localport),
+            '--host-resolver-rules=MAP * 0.0.0.0 , EXCLUDE localhost',
+            '--user-data-dir=/tmp/chrome{}'.format(localport)
+        ]
+        with open(os.devnull, 'w') as f:
+            Popen(cmd, stdout=f, stderr=f)

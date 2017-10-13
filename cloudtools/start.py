@@ -71,6 +71,12 @@ def init_parser(parser):
     parser.add_argument('--init', default='', help='Comma-separated list of init scripts to run.')
     parser.add_argument('--vep', action='store_true', help='Configure the cluster to run VEP.')
 
+    # ELK stack arguments
+    parser.add_argument('--elk', action='store_true', help='Initialize an ElasticSearch/Logstash/Kibana stack for debugging.')
+    parser.add_argument('--elk-boot-disk-size', default=250, type=int,
+                        help='Disk size of ELK machine, in GB (default: %(default)s).')
+    parser.add_argument('--elk-machine-type', default='n1-standard-4', help='ELK machine type.')
+
 
 def main(args):
     print("Starting cluster '{}'...".format(args.name))
@@ -88,7 +94,7 @@ def main(args):
         else:
             args.worker_machine_type = 'n1-standard-8'  # default
     
-    # parse Spark and HDFS configuration parameters, combine into properties argument
+    # parse Spark, HDFS, and ELK configuration parameters, combine into properties argument
     properties = [
         'spark:spark.driver.memory={}g'.format(str(int(machine_mem[args.master_machine_type] * 0.8))),
         'spark:spark.driver.maxResultSize=0',
@@ -98,6 +104,7 @@ def main(args):
         'spark:spark.executor.extraJavaOptions=-Xss4M',
         'hdfs:dfs.replication=1'
     ]
+
     if args.properties:
         properties.append(args.properties)
 
@@ -132,6 +139,42 @@ def main(args):
     # if Python packages requested, add metadata variable
     if args.packages:
         metadata = '^:^' + metadata.replace(',', ':') + ':PKGS={}'.format(args.packages)
+
+    if args.elk:
+        elk_name = args.name + "-elk"
+
+        elk_properties = [
+            'spark:spark.metrics.conf=/home/hail/metrics.properties',
+            'spark:spark.history.fs.logDirectory=hdfs://{elk}:9000/user/spark/applicationHistory'.format(elk=elk_name),
+            'spark:spark.eventLog.enabled=true',
+            'spark:spark.eventLog.dir=hdfs://{elk}:9000/user/spark/applicationHistory'.format(elk=elk_name)
+        ]
+
+        properties.extend(elk_properties)
+        metadata += ',elasticsearch-node={}'.format(elk_name)
+        init_actions += ',gs://hail-common/diagnose/dataproc_init.sh'
+
+        elk_cmd = [
+            'gcloud',
+            'compute',
+            'instances',
+            'create',
+            elk_name,
+            '--zone={}'.format(args.zone),
+            '--image=debian-8-jessie-v20170918',
+            '--image-project=debian-cloud',
+            '--boot-disk-device-name={}'.format(elk_name),
+            '--boot-disk-size={}GB'.format(args.elk_boot_disk_size),
+            '--metadata=startup-script-url=gs://hail-common/diagnose/vm_init.sh',
+            '--machine-type={}'.format(args.elk_machine_type)
+        ]
+
+        # print underlying gcloud command
+        print('elk command:')
+        print(' '.join(elk_cmd[:5]) + ' \\\n    ' + ' \\\n    '.join(elk_cmd[5:]))
+
+        # spin up ELK vm
+        call(elk_cmd)
 
     # command to start cluster
     cmd = [
