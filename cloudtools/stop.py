@@ -6,12 +6,15 @@ def init_parser(parser):
                         help='Compute zone for the cluster (default: %(default)s).')
     parser.add_argument('--elk', action='store_true',
                         help='Stop an ELK vm.')
+    parser.add_argument('--all', action='store_true',
+                        help='Stop both cluster and ELK vm.')
 
 def main(args):
-    if args.elk:
+    if args.elk or args.all:
         name = args.name + "-elk"
         print("Stopping virtual machine '{}'...".format(name))
         call(['gcloud', 'compute', 'instances', 'delete', '--quiet', '--zone={}'.format(args.zone), name])
-    else:
+        
+    if not args.elk or args.all:
         print("Stopping cluster '{}'...".format(args.name))
         call(['gcloud', 'dataproc', 'clusters', 'delete', '--quiet', args.name])
