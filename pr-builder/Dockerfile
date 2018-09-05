@@ -1,8 +1,8 @@
 FROM alpine:3.8
 
-RUN apk --no-cache add python3 bash git openssh
+RUN apk --no-cache add python3 bash git openssh curl
 
-RUN useradd --create-home --shell /bin/bash cloudtools
+RUN adduser -S -s /bin/bash cloudtools
 USER cloudtools
 WORKDIR /home/cloudtools
 
