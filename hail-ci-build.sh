@@ -2,7 +2,9 @@
 
 set -ex
 
-gcloud config set project broad-ctsa
+gcloud auth activate-service-account \
+     hail-ci-0-1@broad-ctsa.iam.gserviceaccount.com \
+     --key-file=/secrets/hail-ci-0-1.key
 
 pip install ./
 
