@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-RUN apk --no-cache add python3 bash git openssh curl
+RUN apk --no-cache add python2 bash git openssh curl
 
 # this seems easier than getting the keys right for apt
 #

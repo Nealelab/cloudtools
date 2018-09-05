@@ -2,7 +2,7 @@
 
 set -ex
 
-pip3 install ./
+pip install ./
 
 CLUSTER_NAME_0_2=cloudtools-ci-$(LC_CTYPE=C LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 8)
 CLUSTER_NAME_0_1=cloudtools-ci-$(LC_CTYPE=C LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 8)
