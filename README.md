@@ -303,9 +303,7 @@ optional arguments:
 
 ## Deploying
 ```
-rm -f dist/*
-python setup.py bdist_wheel
-twine upload dist/* -u <username> -p <password>
+TWINE_USERNAME=username TWINE_PASSWORD=password make deploy
 ```
 
 ## Creating the k8s Deployment Secrets
