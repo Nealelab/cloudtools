@@ -307,3 +307,15 @@ rm -f dist/*
 python setup.py bdist_wheel
 twine upload dist/* -u <username> -p <password>
 ```
+
+## Creating the k8s Deployment Secrets
+
+pypi-username and pypi-password are files containing credentials sufficiently
+privileged to publish cloudtools
+
+```
+kubectl create secret generic \
+  ci-deploy-0-1--nealelab-cloudtools \
+  --from-file=secrets/pypi-username \
+  --from-file=secrets/pypi-password
+```
