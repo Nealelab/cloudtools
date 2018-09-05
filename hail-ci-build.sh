@@ -2,7 +2,6 @@
 
 set -ex
 
-git clone https://github.com/nealelab/cloudtools.git
 pip3 install ./cloudtools
 
 CLUSTER_NAME_0_2=cloudtools-ci-$(LC_CTYPE=C LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 8)
