@@ -5,7 +5,7 @@ set -ex
 PUBLISHED=$(pip --no-cache-dir show cloudtools | grep 'Version:' | sed 's/Version: //')
 CURRENT=$(grep 'version=' setup.py | sed -E "s/.*version=\'(.*)\',/\1/")
 
-if [[ "${PUBLISHED}" == "${CURRENT}" ]]
+if [[ "${PUBLISHED}" != "${CURRENT}" ]]
 then
     echo deploying ${CURRENT}, was ${PUBLISHED}
     set +x
