@@ -142,9 +142,9 @@ def main(args):
     else:
         hash_length = len(args.hash)
         if hash_length < 12:
-            raise ValueError(f'--hash expects a 12 character git commit hash, received {args.hash}')
+            raise ValueError('--hash expects a 12 character git commit hash, received {}'.format(args.hash))
         elif hash_length > 12:
-            print(f'--hash expects a 12 character git commit hash, I will truncate this longer hash to tweleve characters: {args.hash}')
+            print('--hash expects a 12 character git commit hash, I will truncate this longer hash to tweleve characters: {}'.format(args.hash))
             hash = args.hash[0:12]
         else:
             hash = args.hash
