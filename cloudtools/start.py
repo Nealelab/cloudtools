@@ -1,10 +1,9 @@
-from .cluster_config import ClusterConfig
-from .utils import latest_sha, load_config, load_config_file
-from subprocess import call, check_call, check_output
+from __future__ import print_function
+
 import sys
-import json
-from . import __version__
 import re
+from subprocess import check_call
+from .utils import latest_sha, load_config, load_config_file
 
 COMPATIBILITY_VERSION = 1
 init_script = 'gs://hail-common/cloudtools/init_notebook{}.py'.format(COMPATIBILITY_VERSION)
