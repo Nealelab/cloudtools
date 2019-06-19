@@ -1,3 +1,9 @@
+# Deprecation Notice
+
+cloudtools has been deprecated in favor of the `hailctl dataproc` 
+command-line utility. See the [forum thread](https://discuss.hail.is/t/new-command-line-utility-hailctl/981)
+for more information.
+
 # cloudtools
 
 [![PyPI](https://img.shields.io/pypi/v/cloudtools.svg)]()

@@ -110,9 +110,8 @@ def main():
 
 
 if __name__ == '__main__':
-    from subprocess import check_output
-    version = decode(check_output(['pip', 'search', 'cloudtools', '|', 'grep', '"^cloudtools ("']))
-    latest_version = version.strip().split()[1][1:-1]
-    if __version__ != latest_version:
-        print("cloudtools is out of date! CURRENT: {} LATEST: {}".format(__version__, latest_version))
+    import sys
+    sys.stderr.write("cloudtools is now deprecated in favor of the 'hailctl dataproc' utility.\n"
+                     "  For more information, see: "
+                     "https://discuss.hail.is/t/new-command-line-utility-hailctl/981\n")
     main()
